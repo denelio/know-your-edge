@@ -21,7 +21,7 @@ import type {
 
 const MarketSimulator: React.FC = () => {
   const [config, setConfig] = useState<SimulationConfig>({
-    initialCapital: 10000,
+    initialCapital: 100000,
     riskPerTradePercent: 1,
     winRatePercent: 50,
     rewardToRiskRatio: 2,
