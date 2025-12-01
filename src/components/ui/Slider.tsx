@@ -21,7 +21,7 @@ export const Slider: React.FC<SliderProps> = ({
       </div>
       <input
         type="range"
-        className={`w-full h-2 bg-dark-700 rounded-lg appearance-none cursor-pointer accent-primary hover:accent-blue-400 ${className}`}
+        className={`w-full h-2 bg-dark-700 rounded-lg appearance-none cursor-pointer accent-primary hover:accent-slate-200 ${className}`}
         {...props}
       />
     </div>

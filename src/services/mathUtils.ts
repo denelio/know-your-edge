@@ -128,14 +128,12 @@ export const runPropFirmSimulation = (
     pass: number;
     failMaxDD: number;
     failDailyDD: number;
-    failTime: number;
   };
   avgDays: number;
 } => {
   let pass = 0;
   let failMaxDD = 0;
   let failDailyDD = 0;
-  let failTime = 0;
   let totalDaysForPass = 0;
 
   const MAX_SIM_DAYS = 1000; // Cap to prevent infinite loops
@@ -155,12 +153,13 @@ export const runPropFirmSimulation = (
     while (currentPhase < config.steps && !failed) {
       const phaseRules = config.phases[currentPhase];
       let equity = config.accountSize;
+      let highWaterMark = config.accountSize;
 
       const profitTarget =
         config.accountSize * (phaseRules.profitTargetPercent / 100);
       const maxLossVal =
         config.accountSize * (phaseRules.maxTotalDrawdownPercent / 100);
-      const minEquityForMaxDD = config.accountSize - maxLossVal; // Static Max DD
+      const staticMinEquity = config.accountSize - maxLossVal;
 
       let phaseDay = 0;
       let phaseOutcome: "PASS" | "FAIL" | null = null;
@@ -169,12 +168,9 @@ export const runPropFirmSimulation = (
         phaseDay++;
         totalDays++;
 
-        if (
-          totalDays > MAX_SIM_DAYS ||
-          (config.timeLimitDays && totalDays > config.timeLimitDays)
-        ) {
+        if (totalDays > MAX_SIM_DAYS) {
           failed = true;
-          failTime++;
+          failMaxDD++;
           phaseOutcome = "FAIL";
           break;
         }
@@ -184,42 +180,44 @@ export const runPropFirmSimulation = (
           startOfDayEquity * (phaseRules.maxDailyDrawdownPercent / 100);
         const minEquityForDailyDD = startOfDayEquity - maxDailyLossVal;
 
-        // Determine number of trades today using Poisson distribution
         const tradesToday = getDailyTradeVolume(config.tradesPerWeek);
 
-        // Run trades for the day
         for (let t = 0; t < tradesToday; t++) {
           const riskAmount = equity * (config.riskPerTradePercent / 100);
           const win = isWin(runWinRate);
 
           if (win) {
             equity += riskAmount * config.rewardToRiskRatio;
+            if (equity > highWaterMark) highWaterMark = equity;
           } else {
             equity -= riskAmount;
           }
 
-          // Check Daily Drawdown (Relative to start of day)
           if (equity <= minEquityForDailyDD) {
             failed = true;
             failDailyDD++;
             phaseOutcome = "FAIL";
             break;
           }
-          // Check Max Total Drawdown (Static)
-          if (equity <= minEquityForMaxDD) {
+
+          let currentMinEquityForMaxDD = staticMinEquity;
+          if (config.isTrailingDrawdown) {
+            currentMinEquityForMaxDD = highWaterMark - maxLossVal;
+          }
+
+          if (equity <= currentMinEquityForMaxDD) {
             failed = true;
             failMaxDD++;
             phaseOutcome = "FAIL";
             break;
           }
-          // Check Profit Target
+
           if (equity >= config.accountSize + profitTarget) {
             phaseOutcome = "PASS";
             break;
           }
         }
 
-        // If passed mid-day, break day loop
         if (phaseOutcome === "PASS") break;
         if (failed) break;
       }
@@ -227,7 +225,7 @@ export const runPropFirmSimulation = (
       if (phaseOutcome === "PASS") {
         currentPhase++;
       } else {
-        break; // Loop breaks if failed
+        break;
       }
     }
 
@@ -238,7 +236,7 @@ export const runPropFirmSimulation = (
   }
 
   return {
-    results: { pass, failMaxDD, failDailyDD, failTime },
+    results: { pass, failMaxDD, failDailyDD },
     avgDays: pass > 0 ? totalDaysForPass / pass : 0,
   };
 };

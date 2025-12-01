@@ -353,7 +353,7 @@ const DataAnalyzer: React.FC = () => {
                 </div>
                 <div className="flex justify-between border-b border-dark-700 pb-2">
                   <span className="text-slate-400">Avg. Trades / Week</span>
-                  <span className="font-mono text-blue-400">
+                  <span className="font-mono text-slate-200">
                     {stats.tradesPerWeek > 0
                       ? stats.tradesPerWeek.toFixed(1)
                       : "N/A"}

@@ -32,7 +32,7 @@ export interface PropFirmConfig {
   accountSize: number;
   steps: number; // 1, 2, or 3
   phases: PhaseConfig[];
-  timeLimitDays: number | null;
+  isTrailingDrawdown: boolean;
   winRatePercent: number;
   rewardToRiskRatio: number;
   riskPerTradePercent: number;
@@ -40,7 +40,7 @@ export interface PropFirmConfig {
 }
 
 export interface PropFirmResult {
-  outcome: "PASS" | "FAIL_MAX_DD" | "FAIL_DAILY_DD" | "FAIL_TIME";
+  outcome: "PASS" | "FAIL_MAX_DD" | "FAIL_DAILY_DD";
   daysTaken: number;
 }
 

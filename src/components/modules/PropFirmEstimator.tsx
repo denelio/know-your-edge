@@ -26,7 +26,7 @@ const PropFirmEstimator: React.FC = () => {
         maxDailyDrawdownPercent: 5,
       },
     ],
-    timeLimitDays: null,
+    isTrailingDrawdown: false,
     winRatePercent: 45,
     rewardToRiskRatio: 2,
     riskPerTradePercent: 1,
@@ -70,7 +70,6 @@ const PropFirmEstimator: React.FC = () => {
       { name: "Pass", value: res.pass, color: "#10b981" },
       { name: "Fail (Max DD)", value: res.failMaxDD, color: "#ef4444" },
       { name: "Fail (Daily DD)", value: res.failDailyDD, color: "#f59e0b" },
-      { name: "Fail (Time)", value: res.failTime, color: "#64748b" },
     ].filter((d) => d.value > 0);
 
     setResults(data);
@@ -118,7 +117,7 @@ const PropFirmEstimator: React.FC = () => {
     if (passRate >= 70)
       return {
         title: "Solid Probability",
-        color: "text-blue-400",
+        color: "text-blue-400",                                                      
         desc: "You have a strong edge, but variance ('bad luck') could still cause failure. Stick to your risk parameters.",
       };
     if (passRate >= 50)
@@ -163,22 +162,19 @@ const PropFirmEstimator: React.FC = () => {
         </div>
 
         <div className="space-y-3">
-          <label className="text-xs font-medium text-slate-400 uppercase">
-            Account Size
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              className="w-4 h-4 rounded border-slate-600 bg-dark-900 text-primary focus:ring-primary"
+              checked={config.isTrailingDrawdown}
+              onChange={(e) =>
+                setConfig({ ...config, isTrailingDrawdown: e.target.checked })
+              }
+            />
+            <span className="text-sm font-medium text-slate-300">
+              Trailing Drawdown
+            </span>
           </label>
-          <select
-            className="w-full bg-dark-900 border border-dark-700 rounded-lg px-3 py-2 text-slate-100"
-            value={config.accountSize}
-            onChange={(e) =>
-              setConfig({ ...config, accountSize: Number(e.target.value) })
-            }
-          >
-            <option value={10000}>$10,000</option>
-            <option value={25000}>$25,000</option>
-            <option value={50000}>$50,000</option>
-            <option value={100000}>$100,000</option>
-            <option value={200000}>$200,000</option>
-          </select>
         </div>
 
         {config.phases.map((phase, idx) => (

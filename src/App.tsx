@@ -39,7 +39,7 @@ const App: React.FC = () => {
                   />
                 </svg>
               </div>
-              <span className="font-bold text-xl tracking-tight">
+              <span className="font-bold text-xl tracking-tight text-slate-100">
                 KnowYour<span className="text-primary">Edge</span>
               </span>
             </div>
